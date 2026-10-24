@@ -1,11 +1,4 @@
-"""Write the published modelling table dataset/semiannual.csv.gz from data/.
-
-Same rows, row order and feature values that model.load() builds from the
-harvested sources, plus both labels and the universe flags. The INN is replaced by
-an HMAC under a random key that is never stored: the id still links one issuer
-across snapshots, but it cannot be reversed by hashing the ~1 500 candidate INNs.
-Names, OKVED, region, auditor and raw balance-sheet amounts are not exported.
-"""
+"""Export the modelling table to dataset/semiannual.csv.gz, INN replaced by a keyed hash."""
 import hashlib
 import hmac
 import os

@@ -1,10 +1,4 @@
-"""Add ЕГРЮЛ liquidation events to the label set.
-
-bo.nalog carries statusCode + statusDate per issuer. LIQUIDATION_STAGE with a
-dated start is an independent stress event and it reaches back further than the
-1prime archive does. INACTIVE is deliberately excluded — it also covers ordinary
-mergers and voluntary wind-ups after the bonds were repaid in full.
-"""
+"""Add ЕГРЮЛ liquidation events (bo.nalog status codes) to the label set."""
 import glob
 import gzip
 import json

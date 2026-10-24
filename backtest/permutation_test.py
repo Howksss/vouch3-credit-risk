@@ -1,9 +1,4 @@
-"""Guard against a hidden leak: shuffle the labels and re-run the same pipeline.
-
-If the machinery is clean, AUC on shuffled labels collapses to ~0.5. Anything
-consistently above that would mean the split, the features, or the universe filter
-is carrying information it should not.
-"""
+"""Permutation test: shuffle labels within each fold and rerun; AUC should drop to about 0.5."""
 import numpy as np
 
 import model as M

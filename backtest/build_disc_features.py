@@ -1,10 +1,4 @@
-"""Point-in-time disclosure-activity features per (inn, as_of).
-
-Everything here is computed from messages dated on or before as_of only.
-Also defines observability: an issuer counts as in-universe at as_of only if it
-published something on 1prime in the preceding 12 months. Without that filter the
-negatives would include issuers whose defaults we simply cannot see.
-"""
+"""Disclosure-activity features per (inn, as_of), from messages dated on or before as_of."""
 import json
 import os
 from collections import defaultdict

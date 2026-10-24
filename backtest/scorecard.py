@@ -1,11 +1,4 @@
-"""WOE scorecard — the low-N-safe alternative to a free-fit logit.
-
-Bin edges are fixed by credit logic, not fitted to the data, so the shape of each
-risk curve cannot be bent by 30 events. Only the weight of each bin is estimated,
-with shrinkage toward the base rate. A name with no debt and 100x interest cover
-lands in the safest bin of every block by construction — which is exactly what the
-free logit failed to do.
-"""
+"""WOE scorecard: bin edges fixed by credit logic, only bin weights are estimated."""
 import json
 import os
 import sys
@@ -17,9 +10,9 @@ HORIZON = 250
 HARD_ONLY = "--hard" in sys.argv
 STRESS = {"default"} if HARD_ONLY else {
     "default", "accel", "bankruptcy", "suspend", "restructuring", "liquidation"}
-PRIOR = 8.0  # shrinkage strength: a bin needs real volume to move off the base rate
+PRIOR = 8.0  # shrinkage toward the base rate
 
-# (feature, edges, higher_is_worse) — edges are open-ended on both sides
+# (feature, edges, higher_is_worse)
 BLOCKS = [
     ("equity_ratio", [0.0, 0.10, 0.25, 0.50], False),
     ("debt_to_assets", [0.10, 0.30, 0.50, 0.70], True),

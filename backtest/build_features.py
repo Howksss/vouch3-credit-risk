@@ -1,9 +1,4 @@
-"""Build a point-in-time feature table from harvested ГИР БО statements.
-
-One row per (inn, as_of). Only statements published on or before as_of are used —
-the filing date (actualBfoDate / datePresent) is the availability date, not the
-period end. That is what keeps the backtest honest.
-"""
+"""Point-in-time features from ГИР БО: only statements published on or before as_of are used."""
 import glob
 import gzip
 import json
@@ -116,10 +111,7 @@ def features_from_detail(det, period_year, pub_date, as_of):
 
 
 def pick_statement(rec, as_of):
-    """Latest statement already published on as_of, as (year, detail, pub_date) or None.
-
-    A statement with no known publication date is skipped rather than guessed.
-    """
+    """Latest statement published on or before as_of, or None. Undated statements are skipped."""
     periods = {str(pp.get("period")): pp for pp in (rec.get("periods") or [])}
     best = None
     for year_s, det in (rec.get("details") or {}).items():

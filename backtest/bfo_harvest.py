@@ -1,8 +1,4 @@
-"""Harvest ГИР БО (bo.nalog.gov.ru) statements for every MOEX bond issuer INN.
-
-Per INN: org card + list of filed periods + full detail for each period from 2020 on.
-Raw JSON per INN in bfo_raw/, resumable via bfo_state.json.
-"""
+"""Harvest ГИР БО statements for every MOEX bond issuer INN. Resumable via bfo_state.json."""
 import gzip
 import json
 import os

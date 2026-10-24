@@ -1,19 +1,4 @@
-"""Out-of-time backtest: can free public data rank bond issuers by default risk?
-
-    as_of T   -> features from the latest statement PUBLISHED on or before T,
-                 plus disclosure-activity features computed from messages <= T
-    label     -> a stress event in (T, T + HORIZON]
-    train on earlier as_of dates, test on the latest one.
-
-Universe rules (they matter more than the model):
-  * issuer must be observable on 1prime at T (published something in prior 12m),
-    otherwise its default would be invisible and it would be a fake negative;
-  * banks and SPVs are dropped — balance-sheet ratios do not mean the same thing;
-  * issuers already in default at T are dropped — ranking them is not a forecast.
-
-Reads the harvested intermediates in data/ when they exist, otherwise the published
-table dataset/semiannual.csv.gz (same rows and features, INN replaced by a hash).
-"""
+"""Out-of-time default backtest: features as of T, label is a stress event in (T, T + horizon]."""
 import json
 import os
 import sys
@@ -25,7 +10,7 @@ import pandas as pd
 HERE = os.path.dirname(os.path.abspath(__file__))
 BASE = os.path.join(HERE, "data")
 DATASET = os.path.join(HERE, "dataset", "semiannual.csv.gz")
-HORIZON = 250  # days; equal for every fold so folds stay comparable
+HORIZON = 250  # days, same for every fold
 HARD_ONLY = "--hard" in sys.argv
 STRESS_ALL = {"default", "accel", "bankruptcy", "suspend", "restructuring", "liquidation"}
 STRESS = {"default"} if HARD_ONLY else STRESS_ALL
@@ -68,8 +53,7 @@ def auc(y, s):
 def boot_auc(y, s, groups, n=400, seed=1):
     """Percentile bootstrap over issuers: rows of one issuer are resampled together."""
     rng = np.random.default_rng(seed)
-    # first-appearance order, not sorted ids: the draw must not depend on whether
-    # groups are INNs or their hashes
+    # first-appearance order, so the draw is the same for INNs and hashes
     uniq = pd.unique(np.asarray(groups))
     out = []
     for _ in range(n):
@@ -140,7 +124,7 @@ def load_dataset():
     """The published table: same rows and features as load(), INN replaced by a keyed hash."""
     df = pd.read_csv(DATASET, dtype={"issuer_id": str}, float_precision="round_trip")
     df["y"] = df["y_default"] if STRESS == {"default"} else df["y_stress"]
-    # the pipeline keys issuers on "inn"; here it holds the hash, not an INN
+    # "inn" holds the hash here
     return df.rename(columns={"issuer_id": "inn"})
 
 
@@ -153,8 +137,7 @@ def universe(df):
 def split(u, horizon=HORIZON):
     """Train on snapshots whose label window closes before the test snapshot."""
     test_t = sorted(u["as_of"].unique())[-1]
-    # drop as_of dates whose label window overlaps the test window — otherwise the
-    # same future default is both a training label and a test label
+    # drop snapshots whose label window overlaps the test window
     cut = (date.fromisoformat(test_t) - timedelta(days=horizon)).isoformat()
     return u[u["as_of"] <= cut], u[u["as_of"] == test_t]
 
@@ -260,8 +243,7 @@ def main():
                               encoding="utf-8")
         print()
 
-    # the per-model intervals overlap; the question that matters is whether the
-    # gain over size alone survives resampling of the same issuers
+    # gain over the size-only model, paired by issuer
     print("[paired bootstrap over issuers: AUC gain over the size-only model]")
     null = scores["size only (null model)"]
     for tag in ("financials only", "fin + disclosure", "fin + disclosure + market"):

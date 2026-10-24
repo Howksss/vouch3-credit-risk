@@ -1,14 +1,4 @@
-"""Discrete-time hazard panel — the honest way to get more training signal.
-
-Each (issuer, month) is one observation and the training label is "an event happens
-in THIS month". That is what stops a single default from being copied into eight
-overlapping positive rows, which is what a long window on a monthly grid would do.
-
-Evaluation stays comparable to the semi-annual run: rank issuers at 31.12.2025 by
-the fitted monthly hazard and score that ranking against the 250-day outcome.
-Confidence intervals are bootstrapped over ISSUERS, not rows — rows of the same
-issuer are the same bet made 36 times.
-"""
+"""Discrete-time hazard panel: one row per (issuer, month), label is an event in that month."""
 import json
 import os
 import sys
@@ -80,7 +70,7 @@ def main():
                        ("fin + disc + market", FEATS + M.MKT)):
         feats = [c for c in feats if c in train.columns]
         Xtr, Xte, names = M.prep(train, test, feats)
-        # scale the ridge with sample size so a 7x bigger panel is not 7x less regularised
+        # scale ridge with sample size
         w = M.fit_logit(Xtr, train["y_hazard"].values.astype(float),
                         l2=5.0 * len(train) / 913)
         s = Xte @ w
@@ -96,7 +86,7 @@ def main():
                  "debt_to_assets", "period"]].head(30).to_csv(
                 os.path.join(BASE, "panel_top.csv"), index=False, encoding="utf-8")
 
-    # what the semi-annual design gave, for reference
+    # semi-annual result for comparison
     print("[reference] semi-annual design, same test date, fin + disclosure: AUC 0.755")
 
 

@@ -1,8 +1,4 @@
-"""Harvest the full 1prime disclosure history for every MOEX bond issuer INN.
-
-Output: prime_messages.jsonl  (one row per disclosure message)
-        prime_state.json      (per-INN fetch status, resumable)
-"""
+"""Harvest 1prime disclosure history for every MOEX bond issuer INN. Resumable via prime_state.json."""
 import gzip
 import json
 import os
@@ -19,8 +15,7 @@ BASE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 RAW = os.path.join(BASE, "prime_raw")
 os.makedirs(RAW, exist_ok=True)
 
-# disclosure.1prime.ru chains to the HARICA ECC root, which is missing from some
-# system trust stores (Windows among them); the pages are public and read-only
+# 1prime uses the HARICA ECC root, missing from the Windows trust store
 CTX = ssl.create_default_context()
 CTX.check_hostname = False
 CTX.verify_mode = ssl.CERT_NONE
@@ -105,8 +100,7 @@ def work(item):
 
 issuers = json.load(open(os.path.join(BASE, "moex_issuers.json"), encoding="utf-8"))
 todo = [e for e in issuers if not state.get(e["inn"], {}).get("ok")]
-# issuers that already have ГИР БО statements are the ones the model can use —
-# fetch their disclosures first so the dataset is usable before the tail finishes
+# issuers with ГИР БО statements first
 have_bfo = {f[:-8] for f in os.listdir(os.path.join(BASE, "bfo_raw"))}
 todo.sort(key=lambda e: 0 if e["inn"] in have_bfo else 1)
 print(f"universe={len(issuers)} todo={len(todo)} "

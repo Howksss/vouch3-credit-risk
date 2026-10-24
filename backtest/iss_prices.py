@@ -1,8 +1,4 @@
-"""Market state per issuer at each as_of date, from MOEX ISS history.
-
-One bulk call per trading day gives every bond's close price and yield, so the
-whole panel costs ~20 requests per as_of date rather than one per bond.
-"""
+"""Close price and yield per issuer at each as_of from MOEX ISS, one bulk call per trading day."""
 import json
 import os
 import ssl
@@ -17,7 +13,7 @@ UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.
 
 from panel_config import AS_OF, SUFFIX  # noqa: E402
 
-# ISS returns nothing on a non-trading day, so walk back up to 6 calendar days
+# no data on non-trading days, step back up to 6 days
 DATES = {d.isoformat(): d for d in AS_OF}
 
 

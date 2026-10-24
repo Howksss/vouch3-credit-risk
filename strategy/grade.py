@@ -1,13 +1,4 @@
-"""Instrument risk grade: rule-based decision strategy with versioned rule sets.
-
-    rules_v1 — sector + three term flags
-    rules_v2 — term penalties + issuer credit proxy (identity, track record)
-
-Every grade carries model_version and a factor log, so a stored grade can always be
-traced back to the rules and inputs that produced it. Pure functions over plain
-dataclasses: no ORM, no database. The only input rules_v2 needs from storage is the
-issuer track record, which is one SQL aggregate (issuer_stats.sql).
-"""
+"""Rule-based instrument grade with versioned rule sets. Every grade stores model_version and its factors."""
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -70,7 +61,7 @@ def classify_sector(issuer_name: str) -> str:
 
 
 def compute_grade(instrument: Instrument) -> Grade:
-    """rules_v1 — terms + sector only. Kept for backward compatibility."""
+    """rules_v1: terms and sector only. Kept for backward compatibility."""
     issuer_name = instrument.issuer.name if instrument.issuer else ""
     sector = (
         instrument.issuer.sector
@@ -145,7 +136,7 @@ def _score_issuer_credit(
     instrument: Instrument,
     issuer_stats: Mapping | None,
 ) -> tuple[dict, dict]:
-    """Internal credit proxy — issuer track record from our own data."""
+    """Issuer track record from our own data."""
     penalties: dict[str, float] = {}
     details: dict = {}
 
@@ -210,7 +201,7 @@ def compute_grade_v2(
     instrument: Instrument,
     issuer_stats: Mapping | None = None,
 ) -> Grade:
-    """rules_v2 — terms + internal credit proxy (issuer track record from own data)."""
+    """rules_v2: term penalties plus issuer track record."""
     term_penalties, term_factors = _score_terms(instrument)
     credit_penalties, credit_factors = _score_issuer_credit(instrument, issuer_stats)
 

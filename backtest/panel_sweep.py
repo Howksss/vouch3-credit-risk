@@ -1,8 +1,4 @@
-"""Does the panel help at all? Sweep the hazard window and the ridge strength.
-
-The panel adds rows, not events — the same ~33 issuers with events are simply cut
-into months. This sweep is the check on whether that re-slicing buys anything.
-"""
+"""Sweep the hazard window and ridge strength on the monthly panel."""
 import json
 import os
 from datetime import date, timedelta
